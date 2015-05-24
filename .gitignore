@@ -55,3 +55,17 @@ docs/_build/
 
 # PyBuilder
 target/
+
+
+
+# tmp
+*~
+*swp
+
+
+# local resource
+data
+resource
+exp
+local
+logs
