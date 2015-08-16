@@ -5,7 +5,28 @@ import os
 import sys
 import math
 import re
+import copy
 
+
+EPS = 1e-6
+
+
+def cut_hist_array(hist, length):
+    if len(hist) >= length:
+        return copy.copy(hist[len(hist) - length:])
+    ret = list()
+    
+    for i in range(length - len(hist)):
+        ret.append(hist[0])
+    ret.extend(hist)
+    
+    return ret
+
+def calc_cross_val(line1_y1, line1_y2, line2_y1, line2_y2):
+    d_line1 = line1_y2 - line1_y1
+    d_line2 = line2_y2 - line2_y1
+    cross_val = (d_line2 * line1_y1 - d_line1 * line2_y1) / (d_line2 - d_line1)
+    return cross_val
 
 def vect_scale_add(seq1, seq2, scale1, scale2):
     if len(seq1) != len(seq2):
@@ -37,13 +58,32 @@ def MACD(seq, short_period, long_period, mid_period):
     diff = DIFF(seq, short_period, long_period)
     dea = DEA(seq, mid_period)
     return vect_scale_add(diff, dea, 2, -2)
+
+def RSI_oneday(hist):
+    global EPS
     
+    U = list()
+    D = list()
     
-def sort_key(item, idx = 0):
-    return item[idx]
+    for i in range(1, len(hist)):
+        diff = hist[i] - hist[i - 1]
+        if diff > 0:
+            U.append(abs(diff))
+            D.append(0.0)
+        else:
+            U.append(0.0)
+            D.append(abs(diff))
+    ema_u = EMA(U, len(hist))[-1]
+    ema_d = EMA(D, len(hist))[-1]
     
-def calc_cross_val(line1_y1, line1_y2, line2_y1, line2_y2):
-    d_line1 = line1_y2 - line1_y1
-    d_line2 = line2_y2 - line2_y1
-    cross_val = (d_line2 * line1_y1 - d_line1 * line2_y1) / (d_line2 - d_line1)
-    return cross_val
+    if ema_u + ema_d < EPS:
+        return 0.5
+    else:
+        return ema_u / (ema_u + ema_d)
+
+def RSI(seq, period):
+    ret = list()
+    for i in range(1, len(seq)):
+        ret.append(RSI_oneday(cut_hist_array(hist[:i], period)))
+    return ret
+

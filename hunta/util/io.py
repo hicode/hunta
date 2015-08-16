@@ -65,25 +65,7 @@ def parse_tdx_day(fn):
     return ret
 
     
-def day_list_tdx(root = './'):
-    sh_dir = root + '/data/shlday/'
-    sz_dir = root + '/data/szlday/'
-    
-    ret = list()
-    
-    list_sh = os.listdir(sh_dir)
-    for stock_id in list_sh:
-        if not stock_id.startswith('sh60'):
-            continue
-        ret.append(sh_dir + stock_id)
-        
-    list_sz = os.listdir(sz_dir)
-    for stock_id in list_sz:
-        if not stock_id.startswith('sz00') and not stock_id.startswith('sz30'):
-            continue
-        ret.append(sz_dir + stock_id)
-    
-    return ret
+
         
 #tester
 if __name__ == '__main__':

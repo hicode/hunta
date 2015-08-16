@@ -1,1 +1,1 @@
-﻿__all__ = ['func', 'util', 'analyze', 'hunt_macd_goldcross']
+﻿__all__ = ['func', 'util', 'analyze', 'analyze_rank']
