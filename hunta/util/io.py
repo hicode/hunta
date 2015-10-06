@@ -9,8 +9,11 @@ from struct import *
 import zipfile
 import concurrent.futures
 
+
 from .ds import *
 from .math import *
+from .util import *
+
 
 #tonghuashun TODO prices failed to parse ???
 def parse_ths_day(fn):
@@ -104,11 +107,12 @@ def get_allhist_tdx_day_source(root = './', download = True):
         os.makedirs(root + '/data/raw')
     if not os.path.exists(root + '/data/lday'):
         os.makedirs(root + '/data/lday')
-    pc = concurrent.futures.ThreadPoolExecutor(max_workers=2);
-    for addr in [sh_addr, sz_addr]:
-        pc.submit(get_one_market_tdx_day_source, root, download, addr)
-    pc.shutdown() 
-
+    #pc = concurrent.futures.ThreadPoolExecutor(max_workers=2);
+    #for addr in [sh_addr, sz_addr]:
+    #    pc.submit(get_one_market_tdx_day_source, root, download, addr)
+    #pc.shutdown() 
+    joblist = [(root, True, sh_addr), (root, True, sz_addr)]
+    run_array(2, get_one_market_tdx_day_source, joblist);
         
 #tester
 if __name__ == '__main__':

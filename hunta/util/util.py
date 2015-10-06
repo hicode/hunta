@@ -43,7 +43,16 @@ def sort_key(item, idx = 0):
 def run_array(num_worker, func, job_array):
     ret = list()
     executor = concurrent.futures.ProcessPoolExecutor(max_workers=num_worker)
-    for res in executor.map(func, job_array):
+    #for res in executor.map(func, *job_array):
+    #    if res != None:
+    #        ret.append(res)
+    fut_lst = list()
+    for args in job_array:
+        future = executor.submit(func, *args)
+        fut_lst.append(future)
+        
+    for future in fut_lst:
+        res = future.result()
         if res != None:
             ret.append(res)
     return ret
