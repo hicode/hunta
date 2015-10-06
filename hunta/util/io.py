@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 
 
@@ -6,7 +6,8 @@ import os
 import sys
 import re
 from struct import *
-
+import zipfile
+import concurrent.futures
 
 from .ds import *
 from .math import *
@@ -27,7 +28,7 @@ def parse_ths_day(fn):
     
     for now_ptr in range(skip_len, len(buf), len_per_item):
         splits = unpack('IHHHHHHHHII'  + 'I' * (col_per_item - 7), buf[now_ptr:now_ptr + len_per_item])
-        print splits
+        print(splits)
 
 #tongdaxin
 def parse_tdx_day(fn):
@@ -39,11 +40,11 @@ def parse_tdx_day(fn):
     tdx_file.close()
     
     num = len(buf)
-    no = num / 32
+    no = num // 32
     b = 0
     e = 32
     
-    for i in xrange(no):
+    for i in range(no):
         splits = unpack('IIIIIfII', buf[b:e])
 
         date = splits[0]
@@ -64,7 +65,49 @@ def parse_tdx_day(fn):
     
     return ret
 
+def day_list_tdx(root = './'):
+    sh_dir = root + '/data/lday/shlday/'
+    sz_dir = root + '/data/lday/szlday/'
     
+    ret = list()
+    
+    list_sh = os.listdir(sh_dir)
+    for stock_id in list_sh:
+        if not stock_id.startswith('sh60'):
+            continue
+        ret.append(sh_dir + stock_id)
+        
+    list_sz = os.listdir(sz_dir)
+    for stock_id in list_sz:
+        if not stock_id.startswith('sz00') and not stock_id.startswith('sz30'):
+            continue
+        ret.append(sz_dir + stock_id)
+    
+    return ret
+
+def get_one_market_tdx_day_source(root, download, addr):
+    local_dir =  root + '/data/raw/'
+    local_fn = local_dir + '/all.' + str(last_trade_date()) + '.' + addr.split('/')[-1]    
+    print(local_fn, addr)
+    if download:
+        os.system('wget -O %s %s' % (local_fn, addr))
+    
+    zipf = zipfile.ZipFile(local_fn)
+    to_dir = root + '/data/lday/' + addr.split('/')[-1].split('.')[0]
+    zipf.extractall(to_dir)
+
+
+def get_allhist_tdx_day_source(root = './', download = True):
+    sh_addr = 'http://www.tdx.com.cn/products/data/data/vipdoc/shlday.zip'
+    sz_addr = 'http://www.tdx.com.cn/products/data/data/vipdoc/szlday.zip'
+    if not os.path.exists(root + '/data/raw'):
+        os.makedirs(root + '/data/raw')
+    if not os.path.exists(root + '/data/lday'):
+        os.makedirs(root + '/data/lday')
+    pc = concurrent.futures.ThreadPoolExecutor(max_workers=2);
+    for addr in [sh_addr, sz_addr]:
+        pc.submit(get_one_market_tdx_day_source, root, download, addr)
+    pc.shutdown() 
 
         
 #tester
@@ -84,5 +127,5 @@ if __name__ == '__main__':
     #
     #for i in range(len(diff) - 30, len(diff)):
     #    print dea[i], ',' ,
-    print day_list_tdx()
+    print(day_list_tdx())
     

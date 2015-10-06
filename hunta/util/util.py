@@ -1,11 +1,13 @@
-﻿#! /usr/bin/env python
+﻿#! /usr/bin/env python3
 
 import sys
 import os
 import re
 import time
 from datetime import datetime
+from datetime import date
 import zipfile
+import concurrent.futures
 
 
 def last_trade_date():
@@ -25,44 +27,26 @@ def last_trade_date():
     last_trade_date.ret = int(dt.strftime('%Y%m%d'))
     return last_trade_date.ret
     
-    
+def is_stock_delisted(stock):
+    last_date = stock.date[-1]
+    last_date_dt = date(last_date // 10000, last_date % 10000 // 100, last_date % 100)
+    now = last_trade_date()
+    now_dt = date(now // 10000, now % 10000 // 100, now % 100)
+    diff = now_dt - last_date_dt
+    if diff.days > 20:
+        return True
+    return False
+   
 def sort_key(item, idx = 0):
     return item[idx]
-    
-    
-def day_list_tdx(root = './'):
-    sh_dir = root + '/data/'
-    sz_dir = root + '/data/'
-    
+
+def run_array(num_worker, func, job_array):
     ret = list()
-    
-    list_sh = os.listdir(sh_dir)
-    for stock_id in list_sh:
-        if not stock_id.startswith('sh60'):
-            continue
-        ret.append(sh_dir + stock_id)
-        
-    list_sz = os.listdir(sz_dir)
-    for stock_id in list_sz:
-        if not stock_id.startswith('sz00') and not stock_id.startswith('sz30'):
-            continue
-        ret.append(sz_dir + stock_id)
-    
+    executor = concurrent.futures.ProcessPoolExecutor(max_workers=num_worker)
+    for res in executor.map(func, job_array):
+        if res != None:
+            ret.append(res)
     return ret
 
-def get_allhist_tdx_day_source(root = './', download = True):
-    sh_addr = 'http://www.tdx.com.cn/products/data/data/vipdoc/shlday.zip'
-    sz_addr = 'http://www.tdx.com.cn/products/data/data/vipdoc/szlday.zip'
-    
-    for addr in [sh_addr, sz_addr]:
-        local_dir =  root + '/data/raw/'
-        local_fn = local_dir + '/all.' + str(last_trade_date()) + '.' + addr.split('/')[-1]
-        if download:
-            os.system('wget -O %s %s' % (local_fn, addr))
-        
-        zipf = zipfile.ZipFile(local_fn)
-        to_dir = root + '/data/' + addr.split('/')[-1].split('.')[0]
-        zipf.extractall(to_dir)        
-
 if __name__ == '__main__':
-    get_allhist_tdx_day_source()
+    pass
