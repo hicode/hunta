@@ -48,7 +48,10 @@ def run_array(num_worker, func, job_array):
     #        ret.append(res)
     fut_lst = list()
     for args in job_array:
-        future = executor.submit(func, *args)
+        if isinstance(args, (list, tuple)):
+            future = executor.submit(func, *args)
+        else:
+            future = executor.submit(func, args)
         fut_lst.append(future)
         
     for future in fut_lst:
