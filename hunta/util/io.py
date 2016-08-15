@@ -11,7 +11,6 @@ import concurrent.futures
 
 
 from .ds import *
-from .math import *
 from .util import *
 
 
@@ -36,7 +35,7 @@ def parse_ths_day(fn):
 #tongdaxin
 def parse_tdx_day(fn):
     name = os.path.basename(fn).split('.')[0]
-    ret = day_struct(name)
+    ret = stock_day_struct(name)
     
     tdx_file = open(fn, 'rb')
     buf = tdx_file.read()
@@ -88,6 +87,34 @@ def day_list_tdx(root = './'):
     
     return ret
 
+def day_index_list_tdx(root = './'):
+    sh_dir = root + '/data/lday/shlday/'
+    sz_dir = root + '/data/lday/szlday/'
+    
+    ret = list()
+    
+    list_sh = os.listdir(sh_dir)
+    for stock_id in list_sh:
+        if not stock_id.startswith('sh00'):
+            continue
+        ret.append(sh_dir + stock_id)
+        
+    return ret
+    
+def day_dict_tdx(root = './'):
+    lst = day_list_tdx(root)
+    dct = dict()
+    for stock in lst:
+        dct[stock.rsplit('/')[-1].rsplit('.')[0]] = stock
+    return dct
+
+def day_index_dict_tdx(root = './'):
+    lst = day_index_list_tdx(root)
+    dct = dict()
+    for stock in lst:
+        dct[stock.rsplit('/')[-1].rsplit('.')[0]] = stock
+    return dct
+    
 def get_one_market_tdx_day_source(root, download, addr):
     local_dir =  root + '/data/raw/'
     local_fn = local_dir + '/all.' + str(last_trade_date()) + '.' + addr.split('/')[-1]    
@@ -131,5 +158,6 @@ if __name__ == '__main__':
     #
     #for i in range(len(diff) - 30, len(diff)):
     #    print dea[i], ',' ,
+    #get_allhist_tdx_day_source()
     print(day_list_tdx())
     

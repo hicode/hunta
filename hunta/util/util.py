@@ -10,6 +10,9 @@ import zipfile
 import concurrent.futures
 
 
+def floor_money(money):
+    return int(money * 100) / 100
+
 def last_trade_date():
     if  hasattr(last_trade_date, "ret"):
         return last_trade_date.ret
@@ -36,9 +39,6 @@ def is_stock_delisted(stock):
     if diff.days > 20:
         return True
     return False
-   
-def sort_key(item, idx = 0):
-    return item[idx]
 
 def run_array(num_worker, func, job_array):
     ret = list()
