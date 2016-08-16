@@ -61,7 +61,6 @@ class stimu_journal_item():
         self.act_amount = act_amount
         self.trans_price = trans_price
         self.trans_amount = trans_amount
-
 class stimu_action():
     def __init__(self, act, stock_idx, price, amount):
         self.act = act

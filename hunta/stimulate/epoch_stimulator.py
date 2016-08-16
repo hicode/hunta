@@ -60,7 +60,7 @@ class epoch_stimulator():
         self.account.stocks_money[stock.name] = 0
 
     def print_profile(self):
-        marco = 'Epoch%d[%s,%.2f,%.2f][money_%.2f,amount_%d]: Act=%s_%d@%.2f, Trans=%d@%.2f, %s'
+        marco = 'Epoch%d[%s][%s,%.2f,%.2f][money_%.2f,amount_%d]: Act=%s_%d@%.2f, Trans=%d@%.2f, %s'
         for i in range(len(self.profile_data.actions)):
             tran_item = self.profile_data.transactions[i]
             act_item = self.profile_data.actions[i]
@@ -80,8 +80,10 @@ class epoch_stimulator():
 
             ava_money = self.profile_data.states[epoch].account.money
             ava_amount = self.profile_data.states[epoch].account.stocks[stock_idx]
-
-            print(marco % (epoch, stock_idx, low_price, high_price, ava_money, ava_amount, act, act_amount, act_price, tran_amount, tran_price, succ))
+            
+            date = self.profile_data.dates[epoch]
+            
+            print(marco % (epoch, date, stock_idx, low_price, high_price, ava_money, ava_amount, act, act_amount, act_price, tran_amount, tran_price, succ))
 
     def finish(self):
         ret = self.epoch_offset <= 1
