@@ -7,6 +7,9 @@ import re
 import numpy as np 
 import talib
 
+
+from ..plot.analyse_plot import *
+
 def rsi_overbuy_sign(hist, threshold = 80.0):
     rsi = talib.RSI(hist.close_price, 6)[-1]
     if rsi > threshold:
@@ -21,5 +24,6 @@ def macd_deadcross(hist):
         #plotter.add_line(('macd', macd, []))
         #plotter.add_line(('macdsignal', macdsignal, []))
         #plotter.show()
+        #curve([macd[-20:], macdsignal[-20:]], hist.date[-20:])
         return True
     return False

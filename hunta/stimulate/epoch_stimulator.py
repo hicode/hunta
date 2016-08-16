@@ -5,6 +5,7 @@ import copy
 
 from ..util.fee import *
 from ..util.ds import *
+from .common import *
 
 def trace_index(money, stock, epochs):
     stock_idx = stock.name
@@ -90,7 +91,21 @@ class epoch_stimulator():
                 self.profile_data.add_state(self.now_state())
                 self.not_finish = False
         return ret
-        
+    
+    
+    def retrieve_index_history(self):
+        ret = dict()
+        for stock in self.index:
+            ret[stock] = self.index[stock].history(self.epoch_offset)
+        return ret
+
+    def retrieve_index_history_np(self):
+        raw_hist = self.retrieve_index_history()
+        ret = dict()
+        for stock in raw_hist:
+            ret[stock] = stock_day_struct_np(raw_hist[stock])
+        return ret
+    
     def retrieve_stock_history(self):
         ret = dict()
         for stock in self.stocks:
@@ -115,6 +130,11 @@ class epoch_stimulator():
         else:
             self.today = None
         #print(date)
+        idx_dct = dict()
+        for idx in self.index:
+            epochid = -self.epoch_offset
+            stock = self.index[idx]
+            idx_dct[idx] = stock_epoch(stock.name, stock.date[epochid], stock.open_price[epochid], stock.close_price[epochid], stock.high_price[epochid], stock.low_price[epochid], stock.amount[epochid], stock.volume[epochid])
         for stock_idx in self.stocks:
             stock = self.stocks[stock_idx]
             
@@ -128,7 +148,7 @@ class epoch_stimulator():
                 valid_sto_idx.add(stock_idx)
                 self.account.stocks_valid_price[stock_idx] = sto[stock_idx].close_price
                 #exit(0)
-        return stimu_state(acc, sto, self.today, valid_sto_idx)
+        return stimu_state(acc, sto, idx_dct, self.today, valid_sto_idx)
 
     def next(self, actions = []):
         if self.finish():
@@ -220,76 +240,6 @@ class epoch_stimulator():
             trans_item = ('sell', self.now_epoch(), False, stock, price, 0)
         self.profile_data.add_journal(act_item, trans_item)
 
-class stimu_state():
-    def __init__(self, account, stocks, date, valid_stock_idx):
-        self.account = copy.deepcopy(account)
-        self.stocks = stocks
-        self.date = date
-        self.valid_stock_idx = sorted(list(valid_stock_idx))
-
-class stimu_accont():
-    def __init__(self, money):
-        self.money = money
-        self.stocks = dict()
-        self.stocks_money = dict()
-        self.stocks_valid_price = dict()
-    
-    def now_nav(self):
-        ret = self.money
-        for stock in self.stocks:
-            if self.stocks[stock] > 0:
-                ret += self.stocks[stock] * self.stocks_valid_price[stock]
-        return ret
-    
-class stimu_profile():
-    def __init__(self, init_money):
-        self.transactions = list()
-        self.actions = list()
-        self.states = list()
-        self.dates = list()
-        
-        self.init_money = init_money
-        self.nav_hist = list()
-        self.return_hist = list()
-        
-    def add_nav(self, nav):
-        self.nav_hist.append(nav)
-        self.return_hist.append(nav / self.init_money)
-        
-    def add_journal(self, act, trans):
-        self.transactions.append(trans)
-        self.actions.append(act)
-    def add_state(self, state):
-        self.states.append(state)
-        self.dates.append(state.date)
-    
-    
-
-class stimu_journal_item():
-    def __init__(self, epoch, act, stock, act_price, act_amount, trans_price, trans_amount):
-        self.epoch = epoch
-        self.act = act
-        self.stock = stock
-        self.act_price = act_price
-        self.act_amount = act_amount
-        self.trans_price = trans_price
-        self.trans_amount = trans_amount
-
-class stimu_action():
-    def __init__(self, act, stock_idx, price, amount):
-        self.act = act
-        self.stock_idx = stock_idx
-        self.price = price
-        self.amount = amount
-class buy_action(stimu_action):
-    def __init__(self, stock_idx, price, amount):
-        stimu_action.__init__(self, 'buy', stock_idx, price, amount)
-class sell_action(stimu_action):
-    def __init__(self, stock_idx, price, amount):
-        stimu_action.__init__(self, 'sell', stock_idx, price, amount)
-class naive_action(stimu_action):
-    def __init__(self, stock_idx, price, amount):
-        stimu_action.__init__(self, 'naive', stock_idx, price, amount)
 
 if __name__ == '__main__':
     pass

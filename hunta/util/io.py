@@ -94,11 +94,15 @@ def day_index_list_tdx(root = './'):
     ret = list()
     
     list_sh = os.listdir(sh_dir)
+    list_sz = os.listdir(sz_dir)
     for stock_id in list_sh:
         if not stock_id.startswith('sh00'):
             continue
         ret.append(sh_dir + stock_id)
-        
+    for stock_id in list_sz:
+        if not stock_id.startswith('sz399'):
+            continue
+        ret.append(sz_dir + stock_id)
     return ret
     
 def day_dict_tdx(root = './'):

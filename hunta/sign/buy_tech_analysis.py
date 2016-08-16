@@ -8,6 +8,7 @@ import math
 import numpy as np 
 import talib
 
+from ..plot.analyse_plot import *
 
 def rsi_oversold_sign(hist, threshold = 20.0):
     rsi = talib.RSI(hist.close_price, 6)[-1]
@@ -29,7 +30,10 @@ def macd_goldcross_rank(hists, valid_idx, num_top=5):
         hist = hists[stock]
         macd, macdsignal, macdhist = talib.MACD(hist.close_price, 12, 26, 9)
         if macd[-1] > macdsignal[-1] and macd[-2] < macdsignal[-2]:
+            #print(macd[-2], macd[-1])
+            #print(macd[-5:])
             cross_val = calc_cross_val(macd[-2], macd[-1], macdsignal[-2], macdsignal[-1])
+            #curve([macd[-20:], macdsignal[-20:]], hists[stock].date[-20:])
             ret.append((stock, abs(cross_val)))
     ret = sorted(ret, key=sork_key_2nd)
     if len(ret) > num_top:

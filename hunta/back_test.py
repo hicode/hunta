@@ -18,7 +18,7 @@ from .strategy.common import *
 ext_resource = None
 
 money = 100000
-days = 400
+days = 150
 
 all_stocks = day_dict_tdx()
 all_index = day_index_dict_tdx()
@@ -27,29 +27,33 @@ cnt = 0
 
 stimulator.add_index(parse_tdx_day(all_index['sh000001'])) #used to trace time
 
-stk_stimu = 'sh601988'
+stk_stimu = 'sh600030'
 
-for stock in [stk_stimu]: # sorted(all_stocks.keys()):
+for stock in sorted(all_stocks.keys()):
     stimulator.add_stock(parse_tdx_day(all_stocks[stock]))
     cnt += 1
-    if cnt > 100:
+    if cnt > 50:
         break
         pass
 hist = stimulator.retrieve_stock_history_np()
+hist_index = stimulator.retrieve_index_history_np()
 
 
 while not stimulator.finish():
     now_state = stimulator.now_state()
     cur_account = stimulator.account
     cur_stocks = now_state.stocks
-    
+    cur_index = now_state.index
     #update price history
     for stock_idx in cur_stocks:
         hist[stock_idx].update(cur_stocks[stock_idx])
+    for idx in stimulator.index:
+        hist_index[idx].update(cur_index[idx])
+    #print(hist_index['sh000001'].close_price)
     #gen buy_cands
-    buy_cands = gen_buy_cands(now_state.date, hist, now_state.valid_stock_idx)
+    buy_cands = gen_buy_cands(now_state.date, hist, hist_index, now_state.valid_stock_idx, cur_account)
     #gen sell_cands
-    sell_cands = gen_sell_cands(now_state.date, hist, now_state.valid_stock_idx, cur_account)
+    sell_cands = gen_sell_cands(now_state.date, hist, hist_index, now_state.valid_stock_idx, cur_account)
     #refine_buy
     buy_cands.difference_update(sell_cands)
     #do sell
@@ -60,8 +64,8 @@ while not stimulator.finish():
     #do buy
     for cand in sorted(buy_ptf.keys()):
         stimulator.buy(cand, buy_ptf[cand][0], buy_ptf[cand][1])
-    
     stimulator.next()
+
 
 my_profile = stimulator.profile_data
 my = ('my', my_profile.nav_hist, stimulator.profile_data.actions)
@@ -77,6 +81,10 @@ trace_index300 = trace_index(money, index300, days)
 indexsha = parse_tdx_day(all_index['sh000001'])
 trace_indexsha = trace_index(money, indexsha, days)
 
+indexszc = parse_tdx_day(all_index['sz399001'])
+trace_indexszc = trace_index(money, indexszc, days)
+
+
 indexstock = parse_tdx_day(all_stocks[stk_stimu])
 trace_indexstock = trace_index(money, indexstock, days)
 
@@ -84,6 +92,7 @@ plotter = stimu_plotter(days, my_profile.dates)
 plotter.add_line(my)
 plotter.add_line(trace_index300)
 plotter.add_line(trace_indexsha)
+plotter.add_line(trace_indexszc)
 plotter.add_line(trace_indexstock)
 plotter.show()
-exit(0)
+

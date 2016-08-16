@@ -1,1 +1,1 @@
-﻿__all__ = ['buy_tech_analysis', 'sell_tech_analysis', 'sell_general']
+﻿__all__ = ['buy_tech_analysis', 'sell_tech_analysis', 'sell_general', 'dapan']
